@@ -1,5 +1,6 @@
 import argparse
 import gym
+from training import training_loop
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -11,15 +12,18 @@ if __name__ == "__main__":
     parser.add_argument("--lr_critic", default=.005, help="learning rate for critic(default=0.001)")
 
     #int values
-    parser.add_argument("--save_model_freq", default=int(1e5), type=int, help="How often to save the model in steps (default=100000)")
+    #parser.add_argument("--save_model_freq", default=int(1e5), type=int, help="How often to save the model in steps (default=100000)")
+    parser.add_argument("--save_model_freq", default=50, type=int, help="How often to save the model in steps (default=100000)")
     parser.add_argument("--timesteps_per_batch", default=4800, type=int, help="amount of steps for the roullout(default=2048)")
     parser.add_argument("--total_time_steps", default=200000000, type=int, help="number of steps to learn(default=200,000,000)")
     parser.add_argument("--max_timesteps_per_episode", default=1600, type=int, help="max amount of steps before a new episode will start (default=2048)")
     parser.add_argument("--n_updates_per_iteration", default=5, type=int, help="max amount of steps to do backprop on the actor critic model for each rollout (default=5)")
     parser.add_argument("--render_every_i", default=10, type=int, help="how often to display the environment (default=10)")
     parser.add_argument("--random_seed", default=0, help="set the random seed if required 0 = no random seed (default=0)")
-    parser.add_argument("--env_name", default="Pendulum-v0", help="Name of environment we plan to train on")
-    
+
+    #string values
+    parser.add_argument("--env_name", default="Pendulum-v1", help="Name of environment we plan to train on")
+    parser.add_argument("--ckpt_path", default="checkpoints", help="default value for where to store or retrieve the path to the trained model")    
 
     #bool values 
     parser.add_argument('--train', dest="train", action='store_true', help='train a new model')
@@ -40,7 +44,9 @@ if __name__ == "__main__":
     print("---------------------------------------")
 
 
-    env = gym.make(args.env_name)
+    # switch between the human readable mode and the mode we have to render.
+    env = gym.make(args.env_name, render_mode="rgb_array")
+    #env = gym.make(args.env_name, render_mode="human")
 
     if args.train:
         training_loop(env, args)

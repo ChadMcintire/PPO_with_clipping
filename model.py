@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-from torch.nn.functional as F
+import torch.nn.functional as F
 import numpy as np
 
 #64-64-out feed forward network
@@ -10,9 +10,9 @@ class FeedForwardNN(nn.Module):
 
         self.ff = nn.Sequential(
                 nn.Linear(in_dim, 64),
-                F.relu()
-                nn.Linear(64, 64)
-                F.relu()
+                nn.ReLU(),
+                nn.Linear(64, 64),
+                nn.ReLU(),
                 nn.Linear(64, out_dim)
         )
 

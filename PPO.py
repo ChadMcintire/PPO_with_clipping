@@ -10,6 +10,7 @@ import matplotlib
 #matplotlib.use('Agg')
 #matplotlib.use('GTK3Agg')
 from matplotlib import pyplot as plt
+import os
 
 
 
@@ -19,6 +20,9 @@ class PPO:
 		PPO with clipping basically the baseline from OpenAI
 	"""
     def __init__(self, env, args):
+        print("observation space type", type(env.observation_space))
+        print("action space type", type(env.action_space))
+
         assert(type(env.observation_space) == gym.spaces.Box)
         assert(type(env.action_space) == gym.spaces.Box)
 
@@ -33,8 +37,8 @@ class PPO:
 
         # set up an optimizer for the actor and critic
         self.optimizer = torch.optim.Adam([
-                            {'params': self.actor.parameters(), 'lr': args.lr_actor},
-                            {'params': self.critic.parameters(), 'lr': args.lr_critic},
+                            {'params': self.actor.parameters(), 'lr': float(args.lr_actor)},
+                            {'params': self.critic.parameters(), 'lr': float(args.lr_critic)},
         ])
 
         #Initialize the covariance matrix used to query the actor for actions
@@ -46,10 +50,11 @@ class PPO:
         self.gamma = args.gamma
         self.render = args.render
         self.n_updates_per_iteration = args.n_updates_per_iteration
-        self.clip = args.clip
+        self.clip = float(args.clip)
         self.save_model_freq = args.save_model_freq
         self.render_every_i = args.render_every_i
         self.i_so_far = 0 # Iterations ran so far
+        self.ckpt_path=args.ckpt_path
 
     
     def learn(self):
@@ -115,9 +120,13 @@ class PPO:
 
                 # take a step with the optimizer
                 self.optimizer.step()
+
+                #print("actor_loss", actor_loss)
+                #print("critic_loss", critic_loss)
                 
             if self.i_so_far % self.save_model_freq == 0:
-                save_checkpoint(ckpt_path=args.ckpt_path)
+                print("saving model on step ", self.i_so_far)
+                self.save_checkpoint(ckpt_path=self.ckpt_path)
 
 
 
@@ -160,11 +169,12 @@ class PPO:
             #obs, reward, done, truncated, info = self.env.reset()
             done = False
             val = True 
+            
+            print("i so far", self.i_so_far)
 
             # Run an episode for a maximum of max_timesteps_per_episode timesteps
             for ep_t in range(self.max_timesteps_per_episode):
                 # If render is specified, render the environment
-                print("i so far", self.i_so_far)
 
                 #use this line if you want to visualize the first episode as well
                 if self.render and (self.i_so_far % self.render_every_i == 0) and (self.i_so_far != 0) and (len(batch_lens) == 0):
@@ -173,7 +183,7 @@ class PPO:
                 #if self.render and (self.i_so_far % self.render_every_i == 0) and len(batch_lens) == 0:
 
                     
-                    print("collecting images")
+                    #print("collecting images")
                     image =  self.env.render()
                     to_render.append(image)
 
@@ -181,13 +191,17 @@ class PPO:
                     print("displaying images")
                     print(np.shape(to_render), "images")
                     for count, image in enumerate(to_render):
-                        print("image", count)
+                        #print("image", count)
                         plt.figimage(image)
                         plt.draw()
                         plt.pause(0.00001)
+
+                        # the display gets incredibly slow if you do not clear the plot occasionally, i do every 10 images 
                         if count % 10 == 0:
                             plt.clf()
                     to_render = []
+
+                    #your plot will hang if you do not close it after this and you have to exit for some reason
                     plt.close('all')
 
 
@@ -208,6 +222,10 @@ class PPO:
 
                 #new way to operate gym
                 obs, reward, done, truncated, info = self.env.step(action)
+
+                if reward >= 1:
+                    print("reward = ", reward)
+                    time.sleep( 2 )
 
                 # Track recent reward, action, and action log probabilities
                 ep_rews.append(reward)
@@ -325,7 +343,7 @@ class PPO:
             # Iterate through all rewards in the episode. We go backwards for smoother calculations of each
             # discounted return (think about why it would be harder starting from the beginning)
             for rew in reversed(ep_rews):
-                discounted_reward = rew + discounted_reward * self.gamma
+                discounted_reward = rew + discounted_reward * float(self.gamma)
                 batch_rtgs.insert(0, discounted_reward)
 
         # Convert the rewards-to-go into a tensor
@@ -341,7 +359,7 @@ class PPO:
                 os.makedirs(ch_pt + ckpt_path + "/")
             torch.save({"actor_state_dict": self.actor.state_dict(),
                         "critic_state_dict": self.critic.state_dict(),
-                        "optimizer_state_dict": self.optimizer.state_dict()}, ch_pt + ckpt_path + "/" + name)
+                        "optimizer_state_dict": self.optimizer.state_dict()}, ch_pt + ckpt_path + "/" + str(self.i_so_far) + ".pth")
 
 
     def load_checkpoint(self, ckpt_path, evaluate=True):

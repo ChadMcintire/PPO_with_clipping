@@ -14,7 +14,7 @@ if __name__ == "__main__":
     #int values
     #parser.add_argument("--save_model_freq", default=int(1e5), type=int, help="How often to save the model in steps (default=100000)")
     parser.add_argument("--save_model_freq", default=50, type=int, help="How often to save the model in steps (default=100000)")
-    parser.add_argument("--timesteps_per_batch", default=4800, type=int, help="amount of steps for the roullout(default=2048)")
+    parser.add_argument("--timesteps_per_batch", default=4800, type=int, help="amount of steps for the roullout(default=4800)")
     parser.add_argument("--total_time_steps", default=200000000, type=int, help="number of steps to learn(default=200,000,000)")
     parser.add_argument("--max_timesteps_per_episode", default=1600, type=int, help="max amount of steps before a new episode will start (default=2048)")
     parser.add_argument("--n_updates_per_iteration", default=5, type=int, help="max amount of steps to do backprop on the actor critic model for each rollout (default=5)")

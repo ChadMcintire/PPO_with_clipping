@@ -1,0 +1,19 @@
+This file is to say what hyperparameters cause the algorithm to converge
+
+Pendulum-v0:
+
+converges in 60 rollouts no parameters tuned
+
+Acrobot-v1
+
+This algorithm does not allow for discrete spaces.
+
+MountainCarContinuous-v0
+This got to a solution that worked very quickly, but took a few attempts. The most important thing was that actor learning rate be increased, and that the episode end after 2400 iterations
+instead so it has sufficient exploration. 
+
+#Example of training that worked, 250 iterations gave a good solution, that is actually better, but doesn't look as clean as 300.
+python3 main.py --no-render --env_name 'MountainCarContinuous-v0' --gamma .99 --render_every_i 3 --lr_actor .001 --lr_critic .001 --max_timesteps_per_episode 2400
+
+#Example of training that 
+python3 main.py --no-render --env_name 'MountainCarContinuous-v0' --gamma .995 --render_every_i 10 --lr_actor .001 --lr_critic .001 --max_timesteps_per_episode 2400 --timesteps_per_batch 7200 --n_updates_per_iteration 2 --clip .2 --save_model_freq 5

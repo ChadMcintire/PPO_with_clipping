@@ -1,6 +1,7 @@
 import argparse
 import gym
 from training import training_loop
+from execute_trained_model import run
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -37,16 +38,29 @@ if __name__ == "__main__":
     parser.add_argument('--render', dest="render", action='store_true', help='display what is happening in the environment (default=True)')
     parser.add_argument('--no-render', dest="render", action='store_false', help='do not display environment')
     parser.set_defaults(render=False)
+
+    parser.add_argument('--hard_mode', dest="hard_mode", action='store_true', help='Certain environments have a hardmode, this activates it, i.e. Bipedal Walker v3 (default=False)')
+    parser.add_argument('--no-hard_mode', dest="hard_mode", action='store_false', help='do not display environment')
+    parser.set_defaults(hard_mode=False)
     args = parser.parse_args()
 
     print("---------------------------------------")
     print(f"Env: {args.env_name}, Seed: {args.random_seed}, Trainging: {args.train}")
     print("---------------------------------------")
 
+    print(args)
 
-    # switch between the human readable mode and the mode we have to render.
-    env = gym.make(args.env_name, render_mode="rgb_array")
-    #env = gym.make(args.env_name, render_mode="human")
+    if args.hard_mode:
+        # switch between the human readable mode and the mode we have to render.
+        env = gym.make(args.env_name, render_mode="rgb_array", hardcore=True)
+        #env = gym.make(args.env_name, render_mode="human")
+
+    else:
+        # switch between the human readable mode and the mode we have to render.
+        env = gym.make(args.env_name, render_mode="rgb_array")
+        #env = gym.make(args.env_name, render_mode="human")
 
     if args.train:
         training_loop(env, args)
+    else:
+        run(env, args)

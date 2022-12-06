@@ -1,0 +1,21 @@
+#python version
+Python 3.9.7
+
+
+pip3 install gym==0.26.2
+pip3 install gym[classic_control]
+matplotlib               3.6.2
+pip3 install box2d-py-2.3.5 
+
+#should install from box2d
+swig-4.1.0
+
+
+#this is the CUDA 11.7 install
+pip3 install torch torchvision torchaudio
+torch                    1.13.0
+torchaudio               0.13.0
+torchvision              0.14.0
+
+
+python3 main.py --render --env_name 'MountainCarContinuous-v0' --gamma .99 --lr .0001

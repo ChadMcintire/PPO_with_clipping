@@ -78,7 +78,7 @@ class PPO:
 
             # Calculate the advantage at k-th iteration
             V, _ = self.evaluate(batch_obs, batch_acts)
-            A_k = batch_rtgs - V.detach()
+            A_k = batch_rtgs - V.detach()                                                    #Algorithm Step 5
 
             # One of the only tricks I used isn't in the pseudocode. Normalizing advantages isn't
             # in theoretically necessary, but in practice it decreases the variance of our 
@@ -87,7 +87,7 @@ class PPO:
             A_k = (A_k - A_k.mean()) / (A_k.std() + 1e-10)
 
             # This is the loop where we update our network for some n epochs
-            for _ in range(self.n_updates_per_iteration):
+            for _ in range(self.n_updates_per_iteration):                                   #Algorithm Step 6 & 7
                 #Calculate V_phi and pi_theta(a_t| s_t)
                 V, current_log_probs = self.evaluate(batch_obs, batch_acts)
 
@@ -106,7 +106,7 @@ class PPO:
 
                 # Calculate actor and critic losses.
                 # NOTE: we take the negative min of the surrogate losses because we're trying to maximize
-                # the performancce function, but Adam minimizes the loss. So minimizing the negative
+                # the performance function, but Adam minimizes the loss. So minimizing the negative
                 # performance function maximizes it
                 actor_loss = (-torch.min(surr1, surr2)).mean()
                 critic_loss = nn.MSELoss()(V, batch_rtgs)
@@ -178,6 +178,8 @@ class PPO:
 
                 #use this line if you want to visualize the first episode as well
                 if self.render and (self.i_so_far % self.render_every_i == 0) and (self.i_so_far != 0) and (len(batch_lens) == 0):
+                    print("render every ", self.render_every_i)
+                    print("i so far in render", self.i_so_far)
 
                 # use this line if you want to visualize, the pattern execept the first episode
                 #if self.render and (self.i_so_far % self.render_every_i == 0) and len(batch_lens) == 0:
@@ -225,7 +227,7 @@ class PPO:
 
                 if reward >= 1:
                     print("reward = ", reward)
-                    time.sleep( 2 )
+                    time.sleep( 1 )
 
                 # Track recent reward, action, and action log probabilities
                 ep_rews.append(reward)
@@ -249,7 +251,7 @@ class PPO:
         batch_obs = torch.tensor(batch_obs, dtype=torch.float)
         batch_acts = torch.tensor(batch_acts, dtype=torch.float)
         batch_log_probs = torch.tensor(batch_log_probs, dtype=torch.float)
-        batch_rtgs = self.compute_rtgs(batch_rews)
+        batch_rtgs = self.compute_rtgs(batch_rews)                                         #Algorithm Step 4
         # Log the episodic returns and episodic lengths in the batch.
 
         return batch_obs, batch_acts, batch_log_probs, batch_rtgs, batch_lens
@@ -320,6 +322,7 @@ class PPO:
         return V, log_probs
 
 
+    #Monte carlo estimates are used for the rewards to go
     def compute_rtgs(self, batch_rewards):
         """
             Compute the Reward-To-Go of each timestep in a batch given the rewards.
